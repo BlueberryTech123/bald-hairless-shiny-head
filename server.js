@@ -34,9 +34,9 @@ const firebaseApp = firebaseAppP.initializeApp(firebaseConfig);
 
 // -- HOSTING STEPS --
 //
-// python -m http.server 8000
+// node server.js
 
-
+const port = 6969;
 console.log("server.js succesfully started");
 
 // -- FIREBASE HOSTING STEPS --
@@ -56,8 +56,25 @@ function GetPublicFile(filename) {
     return root + "/" + pagesRoot + "/" + filename;
 }
 
-expressApp.get("/testing", (req, res) => {
+expressApp.get(
+    "/style.css", 
+    (req, res) => { res.sendFile(GetPublicFile("style.css")); });
+expressApp.get(
+    "/sitecomponents.js", 
+    (req, res) => { res.sendFile(GetPublicFile("sitecomponents.js")); });
+
+expressApp.get("/", (req, res) => {
+    res.sendFile(GetPublicFile("index.html"));
+});
+
+expressApp.get("/testingplace", (req, res) => {
     res.sendFile(GetPublicFile("testing.html"));
 });
 
-expressApp.listen(8000);
+
+// -- 404 PAGE --
+expressApp.use("*", (req, res) => {
+    res.sendFile(GetPublicFile("404.html"));
+})
+
+expressApp.listen(port);
