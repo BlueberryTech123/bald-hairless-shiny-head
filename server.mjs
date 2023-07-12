@@ -5,14 +5,14 @@
 // import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 import firebase from "firebase/compat/app";
-import "firebase/app";
-import "firebase/analytics";
-import "firebase/auth";
-import 'firebase/firestore';
+import * as firebaseApp from "firebase/app";
+import * as firebaseAnal from "firebase/analytics";
+import * as firebaseAuth from "firebase/auth";
+import * as firebaseStore from "firebase/firestore";
 
 // Allow both require and import to be used in the same file
 import { createRequire } from "module";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
 const require = createRequire(import.meta.url);
 
 // const firebaseApp = require("firebase/app");
@@ -22,7 +22,7 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const url = require('url');
-const async = require("async");
+const crypto = require("crypto");
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -40,9 +40,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const firebaseApp = firebase.initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-// const firebaseAnal = firebaseAnalP.getAnalytics(firebaseApp);
+const _firebaseApp = firebase.initializeApp(firebaseConfig);
+const auth = firebaseAuth.getAuth(_firebaseApp);
+const firestore = firebaseStore.getFirestore(_firebaseApp);
+// const _firebaseAnal = firebaseAnal.getAnalytics(_firebaseApp);
+
+const accountVersionId = 0.1;
 
 
 // =================================================
@@ -76,14 +79,81 @@ function getPublicFile(filename) {
 
 // -- DATABASE --
 
-async function createAccount(email, username, password) {
+let deviations = 0;
+
+function generateId() {
+    deviations++;
+    if (deviations == 68419) {
+        deviations = 0;
+    }
+    let time = `${new Date().toString()} ${deviations} i love oily black men <3 我爱油腻腻的黑人`;
+    let hash = crypto.createHash("md5").update(time).digest("hex").substring(0, 10);
+    return hash;
+}
+
+async function generateNonCollidedId() {
+    let newId = generateId();
+    while ((await getDoc(doc(firestore, "users", newId))).exists) {
+        newId = generateId();
+    }
+    return newId;
+}
+
+async function createAccount(email, username, password, gender, birthday) {
     try {
         let user = await createUserWithEmailAndPassword(auth, email, password);
-        return true;
+        let generatedId = await generateNonCollidedId();
+        setDoc(doc(firestore, "users", generatedId), {
+            "accountVersionId": accountVersionId,
+
+            // ----------------------------
+
+            "username": username,
+            "handle": username,
+            "avatar": "",
+            "banner": "",
+            "gender": gender,
+            "bio": "Hello there.",
+            "joined": new Date().getTime(),
+            "status": 0,
+            "statusText": "",
+            "birthday": birthday,
+
+            // ----------------------------
+
+            "friends": [],
+            "blocked": [],
+            "conversations": [],
+            "servers": [],
+        });
+        return {
+            "message": "gay balls sex",
+            "success": true,
+        };
     }
     catch (error) {
         console.log(error.message);
-        return false;
+
+        let errorCode = error.code;
+        let errorMessage = "Unknown error!";
+
+        if (errorCode == "auth/email-already-in-use") {
+            errorMessage = "Email already in use! Try another email.";
+        }
+        else if (errorCode == "auth/invalid-email") {
+            errorMessage = "This email doesn't exist.";
+        }
+        else if (errorCode == "auth/weak-password") {
+            errorMessage = "Your password sucks.";
+        }
+        else if (errorCode == "auth/operation-not-allowed") {
+            errorMessage = "Ok seriously how the fuck did you even get this error message, like I'm honestly amazed this is even possible.";
+        }
+
+        return {
+            "message": errorMessage,
+            "success": false,
+        };
     }
 }
 
@@ -99,17 +169,10 @@ async function authenticate(email, password) {
 }
 
 function newServer(name, icon, email, password) {
-    //
+    
 }
 
 // -- ROUTING --
-
-// expressApp.get(
-//     "/style.css", 
-//     (req, res) => { res.sendFile(GetPublicFile("style.css")); });
-// expressApp.get(
-//     "/sitecomponents.js", 
-//     (req, res) => { res.sendFile(GetPublicFile("sitecomponents.js")); });
 
 expressApp.get("/", (req, res) => {
     res.sendFile(getPublicFile("index.html"));
@@ -119,8 +182,19 @@ expressApp.get("/testingplace", (req, res) => {
     res.sendFile(getPublicFile("testing.html"));
 });
 
-// Grand access to public files
+expressApp.get("/login", (req, res) => {
+    res.sendFile(getPublicFile("login.html"));
+});
+expressApp.get("/register", (req, res) => {
+    res.sendFile(getPublicFile("register.html"));
+});
+
+// Grant access to public files
 expressApp.use(express.static("public"));
+
+// -- 
+
+// expressApp.post("/")
 
 
 // -- 404 PAGE --

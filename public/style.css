@@ -22,6 +22,9 @@ a {
     text-decoration: none;
 }
 
+section {
+    padding: 100px;
+}
 nav {
     display: flex;
     justify-content: flex-start;
@@ -46,6 +49,23 @@ button {
 }
 button:hover {
     filter: brightness(150%);
+}
+
+input[type=text], input[type=password], input[type=email] {
+    padding: 15px 50px 15px 30px;
+    font-size: 14px;
+    background-color: rgba(69, 69, 69, 0.8);
+    border: none;
+    border-radius: 500px;
+    margin: 5px;
+    color: #ababab;
+}
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus {
+    outline: none;
+    filter: brightness(110%);
+}
+a {
+    color: #13bcff;
 }
 
 nav img {
@@ -86,6 +106,7 @@ nav img {
     position: absolute;
     width: calc(100% - var(--sidebar-width));
     left: var(--sidebar-width);
+    padding: 0px;
     /* background: var(--light); */
     height: 100%;
 }
@@ -99,6 +120,12 @@ nav img {
     width: calc(100% - var(--sidebar-server-width));
     left: var(--sidebar-server-width);
 }
+.special-background {
+    background-image: url("images/background.png");
+    background-size: 350px 350px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
 .channel {
     background: rgba(69, 69, 69, 0.5);
@@ -109,7 +136,12 @@ nav img {
 }
 .message {
     padding: 20px;
-    background-color: #0f0;
+    margin: 0px;
+    background-color: transparent;
+    transition: 420ms;
+}
+.message:hover {
+    background-color: rgba(69, 69, 69, 0.3);
 }
 .profile-picture-content {
     /* display: inline-block; */
