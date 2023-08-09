@@ -8,7 +8,7 @@ import firebase from "firebase/compat/app";
 import * as firebaseApp from "firebase/app";
 import * as firebaseAnal from "firebase/analytics";
 import * as firebaseAuth from "firebase/auth";
-import * as firebaseStore from "firebase/firestore";
+import * as firebaseFiretore from "firebase/firestore";
 
 // Allow both require and import to be used in the same file
 import { createRequire } from "module";
@@ -23,6 +23,7 @@ const fs = require('fs');
 const http = require('http');
 const url = require('url');
 const crypto = require("crypto");
+const bodyParser = require("body-parser");
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -42,7 +43,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const _firebaseApp = firebase.initializeApp(firebaseConfig);
 const auth = firebaseAuth.getAuth(_firebaseApp);
-const firestore = firebaseStore.getFirestore(_firebaseApp);
+const firestore = firebaseFiretore.getFirestore(_firebaseApp);
 // const _firebaseAnal = firebaseAnal.getAnalytics(_firebaseApp);
 
 const accountVersionId = 0.1;
@@ -67,7 +68,11 @@ console.log("server.js succesfully started");
 
 
 const expressApp = express();
-expressApp.use(express.json());
+// expressApp.use(express.json());
+
+expressApp.use(bodyParser.urlencoded({
+    extended: true
+}));
 
 var pagesRoot = "public";
 // var root = __dirname;
@@ -93,7 +98,7 @@ function generateId() {
 
 async function generateNonCollidedId() {
     let newId = generateId();
-    while ((await getDoc(doc(firestore, "users", newId))).exists) {
+    while ((await firebaseFiretore.getDoc(firebaseFiretore.doc(firestore, "users", newId))).exists) {
         newId = generateId();
     }
     return newId;
@@ -101,9 +106,12 @@ async function generateNonCollidedId() {
 
 async function createAccount(email, username, password, gender, birthday) {
     try {
-        let user = await createUserWithEmailAndPassword(auth, email, password);
-        let generatedId = await generateNonCollidedId();
-        setDoc(doc(firestore, "users", generatedId), {
+        // console.log(`Email: ${email}; Password: ${password}`);
+        let user = (await firebaseAuth.createUserWithEmailAndPassword(auth, email, password)).user;
+
+        console.log("Account created!");
+
+        firebaseFiretore.setDoc(firebaseFiretore.doc(firestore, "users", user.uid), {
             "accountVersionId": accountVersionId,
 
             // ----------------------------
@@ -126,8 +134,10 @@ async function createAccount(email, username, password, gender, birthday) {
             "conversations": [],
             "servers": [],
         });
+        console.log("Account data created!");
+
         return {
-            "message": "gay balls sex",
+            "message": "Success!",
             "success": true,
         };
     }
@@ -159,7 +169,8 @@ async function createAccount(email, username, password, gender, birthday) {
 
 async function authenticate(email, password) {
     try {
-        let user = await signInWithEmailAndPassword(auth, email, password);
+        let user = await firebaseAuth.signInWithEmailAndPassword(auth, email, password);
+        await firebaseAuth.signOut(auth);
         return true;
     }
     catch (error) {
@@ -192,7 +203,25 @@ expressApp.get("/register", (req, res) => {
 // Grant access to public files
 expressApp.use(express.static("public"));
 
-// -- 
+// -- FUNCTIONS --
+
+expressApp.post("/signin", async function (req, res) {
+    // console.log(req.body)
+    let accountExists = await authenticate(req.body.email, req.body.password);
+
+    if (accountExists) {
+        res.json({"message": "", "success": true});
+    }
+    else {
+        res.json({"message": "Account invalid.", "success": false});
+    }
+});
+
+expressApp.post("/signup", async function (req, res) {
+    console.log(req.body);
+    let message = await createAccount(req.body.email, req.body.username, req.body.password, req.body.gender, req.body.birthday);
+    res.json(message);
+});
 
 // expressApp.post("/")
 
