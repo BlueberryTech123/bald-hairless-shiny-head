@@ -44,7 +44,7 @@ function validatePage() {
     $.post("/signin", { "email": email, "password": password }, function(data, status) {
         console.log(document.cookie);
         console.log(data);
-        if (!data["success"]) {
+        if (!data.success) {
             logout();
         }
     })
@@ -61,8 +61,8 @@ function login() {
 
     $.post("/signin", { "email": email, "password": password }, function(data, status) {
         console.log(data);
-        if (!data["success"]) {
-            setError(data["error"]);
+        if (!data.success) {
+            setError(data.error);
         }
         else {
             loginCookie(email, password);
@@ -95,12 +95,42 @@ function register() {
 
     $.post("/signup", sentData, function(data, status) {
         console.log(data);
-        if (!data["success"]) {
-            setError(data["message"]);
+        if (!data.success) {
+            setError(data.message);
         }
         else {
             loginCookie(email, password);
             window.location = "/testingplace";
         }
     })
+}
+
+function newServer(name, allowInvites) {
+    let email = getCookie("email");
+    let password = getCookie("password");
+
+    $.post("/signin", {
+        "email": email, "password": password,
+        
+        "name": name,
+        "icon": "", 
+        "allowInvites": allowInvites
+    }, function(data, status) {
+        //
+    });;
+}
+
+function loadUserData() {
+    let email = getCookie("email");
+    let password = getCookie("password");
+
+    $.post("/getUserData", {
+        "email": email, "password": password,
+    }, function(data, status) {
+        currentUser = data;
+    });
+}
+
+function loadServerBar() {
+
 }

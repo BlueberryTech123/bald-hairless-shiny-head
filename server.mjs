@@ -47,6 +47,7 @@ const firestore = firebaseFiretore.getFirestore(_firebaseApp);
 // const _firebaseAnal = firebaseAnal.getAnalytics(_firebaseApp);
 
 const accountVersionId = 0.1;
+const serverVersionId = 0.1;
 
 
 // =================================================
@@ -96,14 +97,83 @@ function generateId() {
     return hash;
 }
 
-async function generateNonCollidedId() {
+async function generateServerId() {
     let newId = generateId();
-    while ((await firebaseFiretore.getDoc(firebaseFiretore.doc(firestore, "users", newId))).exists) {
+    while ((await firebaseFiretore.getDoc(firebaseFiretore.doc(firestore, "server", newId))).exists) {
         newId = generateId();
     }
     return newId;
 }
 
+function message(userId, content, files) {
+    return 69420;
+}
+
+function channel(name, type = 0) {
+    return {
+        "name": name,
+        "type": type,
+        "messages": [],
+        "permissions": []
+    };
+}
+
+function role(name) {
+    return {"name": name, "permissions": []}
+}
+
+function serverMember(id, roles) {
+    return {"id": authentication.message.uid, "roles": roles};
+}
+
+async function createServer(email, password, name, icon, allowInvites) {
+    let authentication = await authenticate(email, password);
+
+    if (!authentication.success) {
+        return {
+            "message": "Authentication failed!",
+            "success": false
+        };
+    }
+
+    try {
+        firebaseFiretore.setDoc(firebaseFiretore.doc(firestore, "servers", generateServerId(), {
+            "serverVersionId": serverVersionId,
+    
+            // ----------------------------
+    
+            "name": name,
+            "icon": icon,
+            "allowInvites": allowInvites,
+            "owner": authentication.message.uid,
+            "members": [
+                serverMember(authentication.message.uid, ["0"])
+            ],
+            "roles": {
+                "0": role("member"),
+            },
+    
+            // ----------------------------
+    
+            "content": [
+                channel("off-topic"),
+                channel("general"),
+                channel("media")
+            ]
+        }));
+
+        return {
+            "message": "Success!",
+            "success": true
+        }
+    }
+    catch (error) {
+        return {
+            "message": error,
+            "success": false
+        }
+    }
+}
 async function createAccount(email, username, password, gender, birthday) {
     try {
         // console.log(`Email: ${email}; Password: ${password}`);
@@ -171,18 +241,22 @@ async function authenticate(email, password) {
     try {
         let user = await firebaseAuth.signInWithEmailAndPassword(auth, email, password);
         await firebaseAuth.signOut(auth);
-        return true;
+        return {
+            "message": {
+                "uid": user.uid,
+                "data": firebaseFiretore.getDoc(firebaseFiretore.doc(firestore, "users", user.uid))
+            },
+            "success": true
+        };
     }
     catch (error) {
         console.log(error.message);
-        return false;
+        return {
+            "message": "nope lmao",
+            "success": false
+        };
     }
 }
-
-function newServer(name, icon, email, password) {
-    
-}
-
 // -- ROUTING --
 
 expressApp.get("/", (req, res) => {
@@ -207,7 +281,7 @@ expressApp.use(express.static("public"));
 
 expressApp.post("/signin", async function (req, res) {
     // console.log(req.body)
-    let accountExists = await authenticate(req.body.email, req.body.password);
+    let accountExists = (await authenticate(req.body.email, req.body.password)).success;
 
     if (accountExists) {
         res.json({"message": "", "success": true});
@@ -218,8 +292,17 @@ expressApp.post("/signin", async function (req, res) {
 });
 
 expressApp.post("/signup", async function (req, res) {
-    console.log(req.body);
     let message = await createAccount(req.body.email, req.body.username, req.body.password, req.body.gender, req.body.birthday);
+    res.json(message);
+});
+
+expressApp.post("/createServer", async function (req, res) {
+    let message = await createServer(req.body.email, req.body.password, req.body.name, req.body.icon, req.body.allowInvites);
+    res.json(message);
+});
+
+expressApp.post("/getUserData", async function (req, res) {
+    let message = await authenticate(req.body.email, req.body.password);
     res.json(message);
 });
 

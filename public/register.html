@@ -18,34 +18,36 @@
     <link rel="stylesheet" href="style.css">
     <title>Register</title>
 </head>
-<body>
+<body class="fancy-background">
     <section>
         <center>
-            <h3>Register</h3>
+            <div class="rounded-box pop-in">
+                <h3>Create new account</h3>
 
-            <form onsubmit="register(); return false;">
-                <input placeholder="Email" id="email" type="email" required><br>
-                <input placeholder="Username" id="username" type="text" required><br>
-                <input placeholder="Password" id="password" type="password" required><br>
-                <input placeholder="Confirm Password" id="confirm-password" type="password" required><br><br>
-                Select gender<br>
-                <select id="gender" required>
-                    <option value="m">Male</option>
-                    <option value="f">Female</option>
-                    <option value="i">Michael</option>
-                    <option value="o">Rather not say / other</option>
-                </select><br>
-                Birthday<br>
-                <input type="date" id="birthday" required><br><br>
+                <form onsubmit="register(); return false;">
+                    <input placeholder="Email" id="email" type="email" required><br>
+                    <input placeholder="Username" id="username" type="text" required><br>
+                    <input placeholder="Password" id="password" type="password" required><br>
+                    <input placeholder="Confirm Password" id="confirm-password" type="password" required><br><br>
+                    Select gender<br>
+                    <select id="gender" required>
+                        <option value="m">Male</option>
+                        <option value="f">Female</option>
+                        <option value="i">Michael</option>
+                        <option value="o">Rather not say / other</option>
+                    </select><br>
+                    Birthday<br>
+                    <input type="date" id="birthday" required><br><br>
 
-                <input type="checkbox" required> &nbsp;&nbsp;&nbsp; I agree with the <a href="#"">Terms of Service</a><br><br>
-                
-                <button class="important-button" type="submit">Register</button>
-            </form>
-            <br>
-            <span class="error" id="error"></span>
-            <br><br>
-            <a href="/login">Login instead</a>
+                    <input type="checkbox" required> &nbsp;&nbsp;&nbsp; I agree with the <a href="#"">Terms of Service</a><br><br>
+                    
+                    <button class="important-button" type="submit">Register</button>
+                </form>
+                <br>
+                <span class="error" id="error"></span>
+                <br><br>
+                <a href="/login">Login instead</a>
+            </div>
         </center>
     </section>
 </body>

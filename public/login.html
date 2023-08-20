@@ -18,22 +18,24 @@
     <link rel="stylesheet" href="style.css">
     <title>Log in</title>
 </head>
-<body>
+<body class="fancy-background">
     <section>
         <center>
-            <h3>Log in</h3>
+            <div class="rounded-box pop-in">
+                <h3>Welcome back!</h3>
 
-            <form onsubmit="login(); return false;">
-                <input placeholder="Email" id="email" type="email" required><br>
-                <input placeholder="Password" id="password" type="password" required><br>
-                <button class="important-button" type="submit">Login</button>
-            </form>
-            <br>
-            <span class="error" id="error"></span>
-            <br><br>
-            <a href="#">Forgot password?</a>
-            &nbsp;&nbsp;•&nbsp;&nbsp;
-            <a href="/register">Create account instead</a>
+                <form onsubmit="login(); return false;">
+                    <input placeholder="Email" id="email" type="email" required><br>
+                    <input placeholder="Password" id="password" type="password" required><br>
+                    <button class="important-button" type="submit">Login</button>
+                </form>
+                <br>
+                <span class="error" id="error"></span>
+                <br><br>
+                <a href="#">Forgot password?</a>
+                &nbsp;&nbsp;•&nbsp;&nbsp;
+                <a href="/register">Create account instead</a>
+            </div>
         </center>
     </section>
 </body>
